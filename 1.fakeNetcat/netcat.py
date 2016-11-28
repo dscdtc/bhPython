@@ -140,7 +140,8 @@ def main():
     global upload
 
     example = '''\r\nExamples:
-    netcat.py -t 192.168.0.1 -p 5555 -l -c
+    Server: netcat.exe -l -p 9999 -c
+    Client: netcat.exe -t localhost -p 9999
     netcat.py -t 192.168.0.1 -p 5555 -l -u=c:\\target.exe
     netcat.py -t 192.168.0.1 -p 5555 -l -e='cat etc/passwd'
     echo 'ABCDEFGHI' | netcat.py -t 192.168.11.12 -p 135 \r\n

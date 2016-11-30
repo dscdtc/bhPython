@@ -1,2 +1,0 @@
-Server: netcat.exe -l -p 9999 -c 
-Client: netcat.exe -t localhost -p 9999

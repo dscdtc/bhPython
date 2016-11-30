@@ -16,7 +16,7 @@ def client_sender(buffer):
         client.connect((target, port))
         if buffer:
             client.send(buffer)
-        while True:
+        while 1:
             # Wite for data feedback
             recv_len = 1
             response = ''
@@ -44,22 +44,18 @@ def server_loop():
     global target
     global port
 
-    #if no target here we listen all port
-    if not target:
-        target = '0.0.0.0'
-
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM)
     server.bind((target, port))
     server.listen(5)
     print 'Start listen on %s:%s ...\n' % (target, port)
 
-    while port:
+    while 1:
         client_socket, addr = server.accept()
         print client_socket, addr
         # spin off a thread to handle our new client
         client_thread = threading.Thread(target=client_handler,
-                                        args=(client_socket, ))
+                                        args=(client_socket))
         client_thread.start()
 
 # this runs a command and returns the output
@@ -82,13 +78,13 @@ def client_handler(client_socket):
     global upload
     global execute
     global is_command
-    #check for upload
+    # check for upload
     if upload:
         client_socket.send('Uploading now...')
         # read in all of the bytes and write to our destination
         file_buffer = ''
         # keep reading data until none is available
-        while True:
+        while 1:
             data = client_socket.recv(1024)
             if data:
                 break
@@ -115,12 +111,11 @@ def client_handler(client_socket):
         output = run_command(execute)
         client_socket.send(output)
 
-    # now we go into another loop if a command shell was requested
+    # go into another loop if a command shell was requested
     if is_command is True:
         client_socket.send('Command is running...\n')
-        while True:
+        while 1:
             # show a simple prompt
-            #client_socket.send('<NC:#> ')
             # now we receive until we see a linefeed (enter key)
             cmd_buffer = ''
             while '\n' not in cmd_buffer:
@@ -132,16 +127,16 @@ def client_handler(client_socket):
                 client_socket.send(response)
 
 def main():
-    global target
     global port
-    global is_listen
-    global execute
-    global is_command
+    global target
     global upload
+    global execute
+    global is_listen
+    global is_command
 
     example = '''\r\nExamples:
-    Server: netcat.exe -l -p 9999 -c
-    Client: netcat.exe -t localhost -p 9999
+    Server: netcat -l -p 9999 -c
+    Client: netcat -t localhost -p 9999
     netcat.py -t 192.168.0.1 -p 5555 -l -u=c:\\target.exe
     netcat.py -t 192.168.0.1 -p 5555 -l -e='cat etc/passwd'
     echo 'ABCDEFGHI' | netcat.py -t 192.168.11.12 -p 135 \r\n
@@ -150,11 +145,12 @@ def main():
      -l <listen mod> -e <execute cmd|exe> \n\
      -c <cmd mod> -u <upload file>"
     parser = optparse.OptionParser(usage, version="%prog 1.0")
+    # if no target here we listen all port
     parser.add_option('-t', dest='target',
-                      type='string', default='',
+                      type='string', default='0.0.0.0',
                       help='specify target host to listen on')
     parser.add_option('-p', dest='port',
-                      type='int', default=0,
+                      type='int',
                       help='specify target port to listen on')
     parser.add_option('-l', dest='is_listen',
                       action='store_true', default=False,
@@ -180,7 +176,7 @@ def main():
     print "\r\nWelcome to dscdtc's <Fake Netcat Tool>\r\n"
 
     # are we going to listen or just send data from stdin
-    if not is_listen and port and len(target) is not 0:
+    if not is_listen and port and len(target):
         # read in the buffer from the commandline
         # this will block, so send CTRL-D
         # if not sending input to stdin
@@ -188,7 +184,7 @@ def main():
         # send data off
         client_sender(buffer)
 
-    elif is_listen:
+    elif is_listen and port is not None:
         server_loop()
 
     else:
